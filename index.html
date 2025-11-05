@@ -2,146 +2,154 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Messages 😎</title>
+<title>P2P Chat 😎</title>
 <style>
-    body {margin:0; padding:0; font-family:'Segoe UI',sans-serif; height:100vh; display:flex; justify-content:center; align-items:center; background:#0d1117; color:#fff;}
-    .card {width:95%; max-width:1000px; height:95%; display:flex; flex-direction:column; justify-content:center; align-items:center; background:#161b22; border-radius:20px; box-shadow:0 12px 30px rgba(0,255,255,0.2); padding:20px; text-align:center;}
-    input,textarea {width:80%; max-width:300px; padding:12px 16px; border:2px solid #30363d; border-radius:12px; outline:none; font-family:monospace; font-size:1rem; box-sizing:border-box; margin:8px auto; display:block; background:#0d1117; color:#58a6ff; transition:border 0.2s, box-shadow 0.2s;}
-    input:focus,textarea:focus {border-color:#58a6ff; box-shadow:0 0 8px rgba(88,166,255,0.5);}
-    button {width:auto; padding:12px 20px; border-radius:12px; border:none; background:linear-gradient(135deg,#58a6ff,#1f6feb); color:#fff; font-weight:bold; cursor:pointer; transition:background 0.3s;}
-    button:hover {background:linear-gradient(135deg,#1f6feb,#58a6ff);}
-    .muted {font-size:14px;color:#8b949e;}
-    .muted span {color:#58a6ff; cursor:pointer;}
-    .muted span:hover {text-decoration:underline;}
-    #chatUI{display:none; flex:1; width:100%; max-width:600px; flex-direction:column; justify-content:flex-start; align-items:center;}
-    .chat-box{background:#0d1117; border-radius:16px; padding:10px; flex:1; width:100%; display:flex; flex-direction:column; justify-content:flex-end; margin:15px 0; gap:6px; overflow-y:auto;}
-    .message{margin:0; padding:8px 12px; border-radius:12px; max-width:80%; word-wrap:break-word; display:inline-block; font-weight:500;}
-    .message.you{background:#238636;color:#fff; align-self:flex-end; text-align:right;}
-    .message.friend{background:#a5d6ff;color:#0d1117; align-self:flex-start; text-align:left;}
-    .message.system{background:#30363d;color:#8b949e; align-self:center; font-style:italic;}
-    .timestamp{font-size:10px; opacity:0.6; margin-left:6px;}
-    #msgContainer{display:flex; justify-content:center; gap:8px; margin-top:5px; width:100%;}
+body {margin:0; padding:0; font-family: 'Segoe UI', sans-serif; background:#0d1117; color:#fff; display:flex; justify-content:center; align-items:center; height:100vh;}
+.card {width:90%; max-width:500px; padding:20px; background:#161b22; border-radius:16px; text-align:center;}
+input {width:80%; padding:10px; margin:5px auto; border-radius:8px; border:none; background:#0d1117; color:#58a6ff;}
+button {padding:8px 12px; margin:5px; border:none; border-radius:8px; background:linear-gradient(135deg,#58a6ff,#1f6feb); color:#fff; cursor:pointer;}
+button:hover {background:linear-gradient(135deg,#1f6feb,#58a6ff);}
+#chat {height:200px; background:#0d1117; margin:10px 0; padding:10px; overflow:auto; border-radius:8px;}
+.message {margin:4px 0; padding:4px 8px; border-radius:6px; word-wrap:break-word;}
+.message.you {background:#238636;}
+.message.friend {background:#a5d6ff; color:#0d1117;}
+.muted {font-size:14px; color:#8b949e;}
+.muted span {color:#58a6ff; cursor:pointer;}
+.muted span:hover {text-decoration:underline;}
 </style>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
 <div class="card">
-<h2>Messages 😎</h2>
+  <h2>P2P Chat 😎</h2>
 
-<div id="auth">
+  <!-- Auth -->
+  <div id="auth">
     <div id="loginBox">
-        <h3>Login</h3>
-        <input id="loginUser" placeholder="Name">
-        <input id="loginPass" placeholder="Password" type="password">
-        <button onclick="login()">Login</button>
-        <p class="muted">Don't have an account? <span onclick="showSignup()">Sign up here</span></p>
+      <input id="loginUser" placeholder="Username">
+      <input id="loginPass" type="password" placeholder="Password">
+      <button onclick="login()">Login</button>
+      <p class="muted">Don't have an account? <span onclick="showSignup()">Sign up here</span></p>
     </div>
     <div id="signupBox" style="display:none;">
-        <h3>Signup</h3>
-        <input id="signupUser" placeholder="Name">
-        <input id="signupPass" placeholder="Password" type="password">
-        <input id="signupCode" placeholder="Code (4 digits)">
-        <button onclick="signup()">Sign Up</button>
-        <p class="muted">Already have an account? <span onclick="showLogin()">Login here</span></p>
+      <input id="signupUser" placeholder="Username">
+      <input id="signupPass" type="password" placeholder="Password">
+      <input id="signupCode" maxlength="4" placeholder="Code (4 digits)">
+      <button onclick="signup()">Sign Up</button>
+      <p class="muted">Already have an account? <span onclick="showLogin()">Login here</span></p>
     </div>
-</div>
+  </div>
 
-<div id="chatUI">
+  <!-- Chat -->
+  <div id="chatUI" style="display:none;">
     <p>Your code: <b id="myCode"></b></p>
     <input id="friendCode" placeholder="Enter friend's code">
     <button onclick="connectChat()">Connect</button>
-    <div id="chat" class="chat-box"></div>
-    <div id="msgContainer">
-        <input id="msg" placeholder="Type your message here..." disabled>
-        <button id="sendBtn" disabled>Send</button>
-    </div>
-</div>
+    <div id="chat"></div>
+    <input id="msg" placeholder="Type your message..." disabled>
+    <button id="sendBtn" disabled onclick="sendMessage()">Send</button>
+  </div>
 </div>
 
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyCCz9BRue1um1fYQXfBHcXhLZKnrLJp0hk",
-  authDomain: "p2pchat-ca7b7.firebaseapp.com",
-  databaseURL: "https://p2pchat-ca7b7-default-rtdb.firebaseio.com",
-  projectId: "p2pchat-ca7b7",
-  storageBucket: "p2pchat-ca7b7.appspot.com",
-  messagingSenderId: "972268794831",
-  appId: "1:972268794831:web:7f50c70bb79490dbf398ba"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+document.addEventListener('DOMContentLoaded', () => {
 
-let myCode, myName, chatRef = null;
-const chatLog = document.getElementById('chat');
-const msgInput = document.getElementById('msg');
-const sendBtn = document.getElementById('sendBtn');
+  const firebaseConfig = {
+    apiKey: "AIzaSyCCz9BRue1um1fYQXfBHcXhLZKnrLJp0hk",
+    authDomain: "p2pchat-ca7b7.firebaseapp.com",
+    databaseURL: "https://p2pchat-ca7b7-default-rtdb.firebaseio.com",
+    projectId: "p2pchat-ca7b7",
+    storageBucket: "p2pchat-ca7b7.appspot.com",
+    messagingSenderId: "972268794831",
+    appId: "1:972268794831:web:7f50c70bb79490dbf398ba"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
 
-function showSignup(){document.getElementById('loginBox').style.display='none'; document.getElementById('signupBox').style.display='block';}
-function showLogin(){document.getElementById('signupBox').style.display='none'; document.getElementById('loginBox').style.display='block';}
+  let myCode, myName, chatRef = null;
+  const chatBox = document.getElementById('chat');
+  const msgInput = document.getElementById('msg');
+  const sendBtn = document.getElementById('sendBtn');
 
-function signup() {
-  const u=document.getElementById('signupUser').value.trim();
-  const p=document.getElementById('signupPass').value.trim();
-  const c=document.getElementById('signupCode').value.trim();
-  if(!u||!p||!c){alert("Fill all fields");return;}
-  if(c.length!==4){alert("Code must be 4 digits");return;}
-  db.ref("users/"+u).get().then(snap=>{
-    if(snap.exists()){alert("Username taken");return;}
-    db.ref("codes/"+c).get().then(s=>{
-      if(s.exists()){alert("Code taken");return;}
-      db.ref("users/"+u).set({password:p,code:c});
-      db.ref("codes/"+c).set(u);
-      alert("Signed up! Now login."); showLogin();
+  // UI toggle
+  window.showSignup = () => {
+    document.getElementById('loginBox').style.display = 'none';
+    document.getElementById('signupBox').style.display = 'block';
+  }
+  window.showLogin = () => {
+    document.getElementById('signupBox').style.display = 'none';
+    document.getElementById('loginBox').style.display = 'block';
+  }
+
+  // Signup
+  window.signup = () => {
+    const u = document.getElementById('signupUser').value.trim();
+    const p = document.getElementById('signupPass').value.trim();
+    const c = document.getElementById('signupCode').value.trim();
+    if(!u || !p || !c) { alert("Fill all fields"); return; }
+    if(c.length !== 4) { alert("Code must be 4 digits"); return; }
+
+    db.ref("users/"+u).get().then(snap => {
+      if(snap.exists()) { alert("Username taken"); return; }
+      db.ref("codes/"+c).get().then(codeSnap => {
+        if(codeSnap.exists()) { alert("Code taken"); return; }
+        db.ref("users/"+u).set({password:p, code:c});
+        db.ref("codes/"+c).set(u);
+        alert("Signup complete! Please login.");
+        showLogin();
+      });
     });
+  }
+
+  // Login
+  window.login = () => {
+    const u = document.getElementById('loginUser').value.trim();
+    const p = document.getElementById('loginPass').value.trim();
+    if(!u || !p) { alert("Enter username and password"); return; }
+
+    db.ref("users/"+u).get().then(snap => {
+      if(!snap.exists() || snap.val().password !== p) { alert("Invalid login"); return; }
+      myCode = snap.val().code; myName = u;
+      document.getElementById('myCode').innerText = myCode;
+      document.getElementById('auth').style.display = 'none';
+      document.getElementById('chatUI').style.display = 'block';
+    });
+  }
+
+  // Connect chat
+  window.connectChat = () => {
+    const friendCode = document.getElementById('friendCode').value.trim();
+    if(!friendCode) { alert("Enter friend's code"); return; }
+    const chatID = [myCode, friendCode].sort().join("_");
+    chatRef = db.ref("messages/"+chatID);
+    chatRef.off();
+    chatRef.on("child_added", snap => {
+      const data = snap.val();
+      const div = document.createElement('div');
+      div.className = data.sender === myCode ? 'message you' : 'message friend';
+      div.innerText = `${data.sender}: ${data.msg}`;
+      chatBox.appendChild(div);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    });
+    msgInput.disabled = false;
+    sendBtn.disabled = false;
+    alert("Connected to "+friendCode);
+  }
+
+  // Send message
+  window.sendMessage = () => {
+    if(!msgInput.value || !chatRef) return;
+    chatRef.push({sender: myCode, msg: msgInput.value});
+    msgInput.value = '';
+  }
+
+  // Press Enter to send
+  msgInput.addEventListener("keydown", e => {
+    if(e.key==="Enter") { e.preventDefault(); sendMessage(); }
   });
-}
 
-function login() {
-  const u=document.getElementById('loginUser').value.trim();
-  const p=document.getElementById('loginPass').value.trim();
-  db.ref("users/"+u).get().then(snap=>{
-    if(!snap.exists()||snap.val().password!==p){alert("Invalid login");return;}
-    myCode=snap.val().code; myName=u;
-    document.getElementById('myCode').innerText=myCode;
-    document.getElementById('auth').style.display='none';
-    document.getElementById('chatUI').style.display='flex';
-  });
-}
-
-function connectChat() {
-  const friendCode=document.getElementById('friendCode').value.trim();
-  if(!friendCode){alert("Enter friend's code");return;}
-  const chatID=[myCode,friendCode].sort().join("_");
-  chatRef=db.ref("messages/"+chatID);
-  chatRef.off();
-  chatRef.on("child_added",snap=>{
-    const data=snap.val();
-    if(data.sender!==myCode) log(data.msg,'friend',friendCode);
-  });
-  msgInput.disabled=false; sendBtn.disabled=false;
-  log("Connected to "+friendCode,'system');
-}
-
-function log(text,who='friend',senderName='Friend'){
-  const div=document.createElement('div');
-  div.className=(who==='you')?'message you':(who==='system')?'message system':'message friend';
-  const time=new Date();
-  const label=(who==='you')?myName:(who==='system')?'System':senderName;
-  div.innerHTML=`<b>${label}:</b> ${text} <span class="timestamp">${time.getHours()}:${time.getMinutes().toString().padStart(2,'0')}</span>`;
-  chatLog.appendChild(div);
-  if(chatLog.children.length>20) chatLog.removeChild(chatLog.firstChild);
-  chatLog.scroll({top:chatLog.scrollHeight,behavior:'smooth'});
-}
-
-function sendMessage(){
-  if(!msgInput.value||!chatRef)return;
-  chatRef.push({sender:myCode,msg:msgInput.value});
-  log(msgInput.value,'you'); msgInput.value='';
-}
-
-msgInput.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault(); sendMessage();}});
-sendBtn.onclick=()=>sendMessage();
+});
 </script>
 </body>
 </html>
